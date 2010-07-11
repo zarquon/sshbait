@@ -1,0 +1,49 @@
+To actually use this cobbled together thing:
+
+daemon.py -p {port} -r {rate}
+
+	port = TCP port to listen on (default 5022)
+	rate = Chance (0 <= rate <= 1) to accept a connection (default 0.5)
+
+It logs to stdout (easy to change), so either pipe it to a file, or to
+logparser.py.
+
+Speaking of which:
+
+logparser.py -d {dbfile} [-c]
+
+	dbfile = SQLite database to store stuff in.
+	
+If the -c flag is used, it'll wipe the db and rebuild the tables. So, you
+need to run it with -c at least once. As for the structure of the DB, it
+should be fairly self explanatory. For the lazy, however, there's three
+tables.
+
+	connection
+		date (int)
+		ip (int)
+	
+	auth_attempt
+		date (int)
+		username (string)
+		password (string)
+		conn (int, FK to connection)
+	
+	command_attempt
+		date (int)
+		command (string)
+		type (int)
+		conn (int, FK to connection)
+	
+The type field in auth_attempt was originally to differentiate between commands
+passed to ssh and those entered interactively. However, since they all ended
+up being logged as interactive commands, the field is basically useless, but I
+never bothered getting rid of it.
+
+The ip is encoded as an int using socket.inet_aton and command stores the raw
+keycodes, encoded in a b64 string.
+
+There's probably about a zillion bugs and other issues with this, but it was
+basically cobbled together in a few hours because I was curious. If you've got
+this far, you can probably fixany issues yourself.
+
